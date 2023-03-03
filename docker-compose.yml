@@ -1,5 +1,9 @@
 version: '2'
 
+networks:
+  traefik:
+    external: true
+
 volumes:
   data:
 
@@ -17,4 +21,12 @@ services:
       - ./config:/mosquitto/config
     ports:
       - '1883:1883'
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.mosquitto-secure.rule=HostSNI(`$DOMAIN`)"
+      - "traefik.tcp.routers.mosquitto-secure.tls.certresolver=default"
+      - "traefik.tcp.routers.mosquitto-secure.service=mosquitto"
+      - "traefik.tcp.services.mosquitto.loadbalancer.server.port=1883"
 
