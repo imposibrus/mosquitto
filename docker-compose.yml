@@ -13,9 +13,9 @@ services:
     container_name: mosquitto
     restart: always
     environment:
-      - TZ=Europe/Moscow
-      - PUID=1001
-      - PGID=33
+      - "TZ=${TZ}"
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
     volumes:
       - data:/mosquitto/data
       - ./config:/mosquitto/config
@@ -29,4 +29,20 @@ services:
       - "traefik.tcp.routers.mosquitto-secure.tls.certresolver=default"
       - "traefik.tcp.routers.mosquitto-secure.service=mosquitto"
       - "traefik.tcp.services.mosquitto.loadbalancer.server.port=1883"
+
+  keepalived:
+    # osixia/keepalived doen't support ARM currently, so build it localy
+    #image: osixia/keepalived:2.0.20
+    build: ./keepalived
+    restart: always
+    network_mode: host
+    command: ["--copy-service"]
+    cap_add:
+      - NET_ADMIN
+      - NET_BROADCAST
+      - NET_RAW
+    environment:
+      - "MQTT_HOST=${MQTT_HOST}"
+      - "MQTT_USER=${MQTT_USER}"
+      - "MQTT_PASSWORD=${MQTT_PASSWORD}"
 
